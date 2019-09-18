@@ -22,7 +22,7 @@ FROM alpine:latest
 
 # copy app
 WORKDIR /app
-COPY --from=builder /go/src/github.com/tusupov/exmoarbitrage/lucy .
+COPY --from=builder /go/src/github.com/DostonAkhmedov/lucy .
 
 # create appuser
 RUN adduser -S -D -H -h /app appuser
