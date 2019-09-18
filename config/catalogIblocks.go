@@ -1,4 +1,4 @@
-package iblock
+package config
 
 var CatalogIblocks = map[string]string{
 	"20102": "ucenennye_tovary",

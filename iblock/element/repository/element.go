@@ -1,14 +1,10 @@
-package iblockElement
+package repository
 
 import (
 	"fmt"
 	"log"
 	"savebestprice/config"
 )
-
-type Element struct {
-	Id int64
-}
 
 const tableName string = "b_iblock_element"
 

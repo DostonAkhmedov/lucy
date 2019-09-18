@@ -11,7 +11,8 @@ var DB *sql.DB
 
 func init() {
 	var err error
-	DB, err = sql.Open(DBType, fmt.Sprintf("%s:%s@/%s", DBLogin, DBPassword, DBName))
+	connection := fmt.Sprintf("%s:%s@tcp(%s:%s)/%s", DBLogin, DBPassword, DBHost, DBPort, DBName);
+	DB, err = sql.Open(DBType, connection)
 	if err != nil {
 		panic(err)
 	}
