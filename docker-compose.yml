@@ -1,0 +1,19 @@
+version: '3.7'
+
+services:
+
+  lucy:
+    build:
+      context: .
+      dockerfile: ./Dockerfile
+    environment:
+      DB_HOST: $DB_HOST
+      DB_PORT: $DB_PORT
+      DB_USER: $DB_USER
+      DB_PASSWORD: $DB_PASSWORD
+      DB_NAME: $DB_NAME
+    networks:
+      - backend
+
+networks:
+  backend:
