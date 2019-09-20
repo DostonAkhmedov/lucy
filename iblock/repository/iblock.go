@@ -4,10 +4,9 @@ import (
 	"context"
 	"database/sql"
 	"fmt"
+	"github.com/DostonAkhmedov/lucy/iblock"
+	"github.com/DostonAkhmedov/lucy/models"
 	"log"
-	"savebestprice/config"
-	"savebestprice/iblock"
-	"savebestprice/models"
 	"strings"
 )
 
@@ -56,10 +55,10 @@ func (ib *iblockRepository) GetList(ctx context.Context) ([]*models.Iblock, erro
 	return iblocks, nil
 }
 
-func (ib *iblockRepository) GetIblockIds(codes ...string) ([]int64, error) {
+func (ib *iblockRepository) GetIblockIds(codes ...int) ([]int64, error) {
 	if len(codes) == 0 {
-		for k, _ := range config.CatalogIblocks {
-			codes = append(codes, k)
+		for _, v := range ib.CatalogIblocks() {
+			codes = append(codes, v)
 		}
 	}
 
@@ -90,6 +89,25 @@ func (ib *iblockRepository) GetIblockIds(codes ...string) ([]int64, error) {
 	}
 
 	return result, nil
+}
+
+func(ib *iblockRepository) CatalogIblocks() []int {
+	return []int{
+		20102,// => 'ucenennye_tovary',
+		20012,// => 'avtoelektronika--12',
+		20011,// => 'masla-i-tekhnicheskie-zhidkosti--11',
+		20010,// => 'avtosvet--10',
+		20008,// => 'instrument',
+		20007,// => 'avtokhimiya--avtokosmetika--7',
+		20006,// => 'aksessuary--6',
+		20005,// => 'akkumulyatornye-batarei--5',
+		20014,// => 'soputstvuyushchie-tovary--14',
+		20004,// => 'shiny--diski--kolpaki--4',
+		//20577,// => 'avtozapchasti--577',
+		20080,// => 'krepezh',
+		20101,// => 'sport_i_turizm',
+		22222,// => 'avtozapchasti',
+	}
 }
 
 func ToString(arr ...interface{}) string {

@@ -1,12 +1,5 @@
 package iblock
 
-import (
-	"database/sql"
-	"fmt"
-	"log"
-	"savebestprice/config"
-)
-
 type Property struct {
 	Active string
 	Sort int

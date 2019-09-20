@@ -2,10 +2,10 @@ package iblock
 
 import (
 	"context"
-	"savebestprice/models"
+	"github.com/DostonAkhmedov/lucy/models"
 )
 
 type Repository interface {
 	GetList(ctx context.Context) ([]*models.Iblock, error)
-	GetIblockIds(codes ...string) ([]int64, error)
+	GetIblockIds(codes ...int) ([]int64, error)
 }
