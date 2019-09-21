@@ -1,7 +1,6 @@
 package repository
 
 import (
-	"context"
 	"database/sql"
 	"fmt"
 	"github.com/DostonAkhmedov/lucy/iblock/element"
@@ -19,7 +18,7 @@ func NewElementRepository(Conn *sql.DB) element.Repository {
 	return &elementRepository{Conn}
 }
 
-func (el *elementRepository) GetList(ctx context.Context, iblockId int64) ([]*iblock.Element, error) {
+func (el *elementRepository) GetList(iblockId int64) ([]*iblock.Element, error) {
 	sqlStr := fmt.Sprintf("SELECT ID FROM %s WHERE ACTIVE='Y' AND IBLOCK_ID=%d", tableName, iblockId)
 	rows, err := el.Conn.Query(sqlStr)
 	if err != nil {
