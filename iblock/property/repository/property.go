@@ -79,7 +79,3 @@ func (p *propertyRepository) Add(prop *iblock.Property) (int64, error) {
 	id, _ = result.LastInsertId()
 	return id, nil
 }
-
-func (p *propertyRepository) Update(prop *iblock.Property) error {
-	panic("implement me")
-}
