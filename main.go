@@ -61,7 +61,10 @@ func main() {
 			panic(err)
 		}
 		for _, el := range elementList {
-			log.Println(el)
+			el.Article = element.FormatArticle(el.Article)
+			if len(el.Article) > 0 && len(el.Brand) > 0 {
+				log.Println(el)
+			}
 		}
 	}
 }

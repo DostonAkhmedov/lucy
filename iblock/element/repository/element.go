@@ -6,6 +6,8 @@ import (
 	"github.com/DostonAkhmedov/lucy/iblock/element"
 	"github.com/DostonAkhmedov/lucy/models/iblock"
 	"log"
+	"regexp"
+	"strings"
 )
 
 const tableName string = "b_iblock_element"
@@ -60,4 +62,23 @@ func (el *elementRepository) GetList(iblockId int64) ([]*iblock.Element, error) 
 	}
 
 	return elements, nil
+}
+
+func (el *elementRepository) FormatArticle(article string) string {
+	r := strings.NewReplacer(" ", "",
+		"-", "",
+		"/", "",
+		"\\", "",
+		".", "",
+		"\"", "",
+		"'", "",
+		"\r", "",
+		"\n", "",
+		"\t", "")
+
+	article = strings.ToLower(r.Replace(article))
+	article = regexp.MustCompile(`/\s*\([^)]*\)/`).ReplaceAllString(article, "")
+	article = regexp.MustCompile("[^A-Za-zА-Яа-яЁё0-9)(_]").ReplaceAllString(article, "")
+
+	return article
 }
