@@ -39,6 +39,7 @@ func (ib *iblockRepository) GetList() ([]*models.Iblock, error) {
 			log.Fatal(err)
 		}
 	}()
+
 	iblocks := make([]*models.Iblock, 0)
 
 	for rows.Next() {
@@ -61,7 +62,6 @@ func (ib *iblockRepository) GetIblockIds(codes ...int) ([]int64, error) {
 		}
 	}
 
-	var result = make([]int64, 0)
 	querty := fmt.Sprintf("SELECT ID FROM %s WHERE ACTIVE='Y' AND XML_ID IN (%s);", tableName, ToString(codes))
 	rows, err := ib.Conn.Query(querty)
 
@@ -77,9 +77,12 @@ func (ib *iblockRepository) GetIblockIds(codes ...int) ([]int64, error) {
 		}
 	}()
 
+	var (
+		id     int64
+		result = make([]int64, 0)
+	)
 	for rows.Next() {
-		var id int64
-		err = rows.Scan(&id)
+		err := rows.Scan(&id)
 		if err != nil {
 			log.Fatal(err)
 			return nil, err

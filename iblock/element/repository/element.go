@@ -48,8 +48,7 @@ func (el *elementRepository) GetList(iblockId int64) ([]*iblock.Element, error) 
 		}
 	}()
 
-	elements := make([]*iblock.Element, 0)
-
+	var elements = make([]*iblock.Element, 0)
 	for rows.Next() {
 		el := new(iblock.Element)
 		err = rows.Scan(&el.Id, &el.Brand, &el.Article, &el.Quantity, &el.MinPrice)
