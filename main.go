@@ -4,13 +4,16 @@ import (
 	_wordFormRepo "github.com/DostonAkhmedov/lucy/brand/wordforms/repository"
 	"github.com/DostonAkhmedov/lucy/config"
 	"github.com/DostonAkhmedov/lucy/driver/mysql"
+	_elementPropertyRepo "github.com/DostonAkhmedov/lucy/iblock/element/property/repository"
 	_elementRepo "github.com/DostonAkhmedov/lucy/iblock/element/repository"
 	_propertyRepo "github.com/DostonAkhmedov/lucy/iblock/property/repository"
 	_iblockRepo "github.com/DostonAkhmedov/lucy/iblock/repository"
 	_linemediaRepo "github.com/DostonAkhmedov/lucy/linemedia/repository"
 	_supplierRepo "github.com/DostonAkhmedov/lucy/linemedia/supplier/repository"
 	"github.com/DostonAkhmedov/lucy/models/iblock"
+	"github.com/DostonAkhmedov/lucy/models/iblock/element"
 	"log"
+	"math"
 )
 
 func main() {
@@ -43,6 +46,7 @@ func main() {
 	propertyRepo := _propertyRepo.NewPropertyRepository(connection)
 	elementRepo := _elementRepo.NewElementRepository(connection)
 	linemediaRepo := _linemediaRepo.NewLinemediaRepository(connection)
+	elementPropertyRepo := _elementPropertyRepo.NewPropertyRepository(connection)
 
 	iblockRepo := _iblockRepo.NewIblockRepository(connection)
 	iblockIds, err := iblockRepo.GetIblockIds()
@@ -79,18 +83,42 @@ func main() {
 		}
 		for _, el := range elementList {
 			el.Article = elementRepo.FormatArticle(el.Article)
+			var minPrice = el.MinPrice
 			if len(el.Article) > 0 && len(el.Brand) > 0 {
 				var brands []string
 				if _, prs := brandsForms[el.Brand]; prs {
 					brands = brandsForms[el.Brand]
 				} else {
-					brands = []string{el.Brand}
+					brands = []string{brandsRepo.ClearBrand(el.Brand)}
 				}
+
 				lmProducts, err := linemediaRepo.GetList(el.Article, brands, suppliers)
 				if err != nil {
 					panic(err)
 				}
-				log.Println(lmProducts)
+
+				for _, part := range lmProducts {
+					minPrice = math.Min(minPrice, part.Price)
+				}
+				elementProperty, err := elementPropertyRepo.GetById(prop.Id, el.Id)
+				if err != nil {
+					panic(err)
+				}
+				if elementProperty == nil {
+					elementProperty.Id, err = elementPropertyRepo.Add(&element.Property{
+						IblockPropertyId: prop.Id,
+						ElementId:        el.Id,
+						Value:            minPrice,
+					})
+					if err != nil {
+						panic(err)
+					}
+				} else {
+					_, err := elementPropertyRepo.Update(elementProperty.Id, minPrice)
+					if err != nil {
+						panic(err)
+					}
+				}
 			}
 		}
 	}

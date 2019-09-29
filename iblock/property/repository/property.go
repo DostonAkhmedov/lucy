@@ -42,7 +42,6 @@ func (p *propertyRepository) GetByCode(ibId int64, propCode string) (*iblock.Pro
 	default:
 		return nil, err
 	}
-
 }
 
 func (p *propertyRepository) Add(prop *iblock.Property) (int64, error) {
@@ -74,7 +73,7 @@ func (p *propertyRepository) Add(prop *iblock.Property) (int64, error) {
 	)
 	if err != nil {
 		log.Fatal(err)
-		return -1, err
+		return 0, err
 	}
 	id, _ = result.LastInsertId()
 	return id, nil

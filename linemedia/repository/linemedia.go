@@ -23,8 +23,9 @@ func (lm *linemediaRepository) GetList(article string, brands []string, supplier
 	articles := []string{article, "0" + article}
 	query := fmt.Sprintf("SELECT id, article, UPPER(brand_title) AS brand, CEIL(price) AS price "+
 		"FROM %s "+
-		"WHERE article IN('%s') AND UPPER(brand_title) IN('%s') AND supplier_id IN('%s') "+
-		"LIMIT 500;",
+		"WHERE price > 0 AND quantity > 0 AND "+
+		"article IN('%s') AND UPPER(brand_title) IN('%s') AND supplier_id IN('%s') "+
+		"LIMIT 20;",
 		tableName,
 		ToString("','", articles),
 		ToString("','", brands),
