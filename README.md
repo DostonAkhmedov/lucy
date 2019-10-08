@@ -1,3 +1,3 @@
 # Lucy
 
-Caclulate best price for iblock elements
+Caclulate best price for products
