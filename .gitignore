@@ -19,3 +19,6 @@ vendor/
 
 # IDEA files
 .idea/
+
+# Log files
+*.log

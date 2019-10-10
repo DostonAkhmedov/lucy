@@ -22,7 +22,7 @@ func (p *propertyRepository) GetById(ibPropId int64, elementId int64) (*element.
 	query := fmt.Sprintf("SELECT ID, IBLOCK_PROPERTY_ID, IBLOCK_ELEMENT_ID, VALUE "+
 		"FROM %s "+
 		"WHERE IBLOCK_PROPERTY_ID=%d AND IBLOCK_ELEMENT_ID=%d "+
-		"ORDER BY ID DESC"+
+		"ORDER BY ID DESC "+
 		"LIMIT 1;",
 		tableName,
 		ibPropId,
@@ -68,8 +68,7 @@ func (p *propertyRepository) Add(prop *element.Property) (int64, error) {
 		return 0, err
 	}
 
-	id, _ := result.LastInsertId()
-	return id, nil
+	return result.LastInsertId()
 }
 
 func (p *propertyRepository) Update(id int64, value float64) (int64, error) {

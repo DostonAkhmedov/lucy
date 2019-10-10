@@ -76,7 +76,7 @@ func (el *elementRepository) FormatArticle(article string) string {
 		"\t", "")
 
 	article = strings.ToLower(r.Replace(article))
-	article = regexp.MustCompile(`/\s*\([^)]*\)/`).ReplaceAllString(article, "")
+	article = regexp.MustCompile(`\(([^\(\)]*)\)`).ReplaceAllString(article, "")
 	article = regexp.MustCompile("[^A-Za-zА-Яа-яЁё0-9)(_]").ReplaceAllString(article, "")
 
 	return article

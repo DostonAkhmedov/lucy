@@ -18,10 +18,44 @@ func NewWordFormsRepository(Conn *sql.DB) wordforms.Repository {
 	return &wordFormsRepository{Conn}
 }
 
-func (wf *wordFormsRepository) GetWordForms() (map[string][]string, error) {
+func (wf *wordFormsRepository) GetWordForms(brand string) ([]string, error) {
+
+	brands, err := wf.GetByGroup(brand)
+
+	if err != nil {
+		log.Fatal(err)
+		return nil, err
+	}
+
+	if len(brands) > 0 {
+		brands = append(brands, wf.ClearBrand(brand))
+		return brands, nil
+	}
+
+	group, err := wf.GetGroup(brand)
+	if err != nil {
+		log.Fatal(err)
+		return nil, err
+	}
+
+	if len(group) > 0 {
+		brands, err = wf.GetByGroup(group)
+		if err == nil {
+			brands = append(brands, wf.ClearBrand(group))
+		}
+		return brands, err
+	}
+
+	return []string{wf.ClearBrand(brand)}, nil
+}
+
+func (wf *wordFormsRepository) GetByGroup(brand string) ([]string, error) {
 	query := fmt.Sprintf("SELECT UPPER(`brand_title`) AS `brand_title`, UPPER(`group`) AS `group` "+
-		"FROM %s ORDER BY `group`;",
-		tableName)
+		"FROM %s "+
+		"WHERE `group`='%s' "+
+		"ORDER BY `group`;",
+		tableName,
+		brand)
 	rows, err := wf.Conn.Query(query)
 	if err != nil {
 		log.Fatal(err)
@@ -36,7 +70,7 @@ func (wf *wordFormsRepository) GetWordForms() (map[string][]string, error) {
 	}()
 
 	var (
-		brandsForms = make(map[string][]string)
+		brandsForms = make([]string, 0)
 		group, word string
 	)
 	for rows.Next() {
@@ -46,13 +80,30 @@ func (wf *wordFormsRepository) GetWordForms() (map[string][]string, error) {
 			return nil, err
 		}
 
-		if _, prs := brandsForms[group]; !prs {
-			brandsForms[group] = append(brandsForms[group], wf.ClearBrand(group))
-		}
-		brandsForms[group] = append(brandsForms[group], wf.ClearBrand(word))
+		brandsForms = append(brandsForms, wf.ClearBrand(word))
 	}
 
 	return brandsForms, nil
+}
+
+func (wf *wordFormsRepository) GetGroup(brand string) (string, error) {
+	query := fmt.Sprintf("SELECT UPPER(`group`) AS `group` "+
+		"FROM %s "+
+		"WHERE `brand_title`='%s' "+
+		"ORDER BY `group` "+
+		"LIMIT 1;",
+		tableName,
+		brand)
+	row := wf.Conn.QueryRow(query)
+	var group string
+	switch err := row.Scan(&group); err {
+	case sql.ErrNoRows:
+		return "", nil
+	case nil:
+		return group, nil
+	default:
+		return "", err
+	}
 }
 
 func (wf *wordFormsRepository) ClearBrand(brand string) string {

@@ -21,15 +21,16 @@ func NewLinemediaRepository(Conn *sql.DB) linemedia.Repository {
 
 func (lm *linemediaRepository) GetList(article string, brands []string, suppliers []string) ([]*models.LMProduct, error) {
 	articles := []string{article, "0" + article}
-	query := fmt.Sprintf("SELECT id, article, UPPER(brand_title) AS brand, CEIL(price) AS price "+
+	query := fmt.Sprintf("SELECT id, article, UPPER(brand_title) AS brand, price, supplier_id "+
 		"FROM %s "+
 		"WHERE price > 0 AND quantity > 0 AND "+
 		"article IN('%s') AND UPPER(brand_title) IN('%s') AND supplier_id IN('%s') "+
 		"LIMIT 20;",
 		tableName,
-		ToString("','", articles),
-		ToString("','", brands),
-		ToString("','", suppliers))
+		strings.Join(articles, "','"),
+		strings.Join(brands, "','"),
+		strings.Join(suppliers, "','"),
+	)
 	rows, err := lm.Conn.Query(query)
 	if err != nil {
 		log.Println(query)
@@ -47,7 +48,7 @@ func (lm *linemediaRepository) GetList(article string, brands []string, supplier
 	parts := make([]*models.LMProduct, 0)
 	for rows.Next() {
 		part := new(models.LMProduct)
-		err := rows.Scan(&part.Id, &part.Article, &part.Brand, &part.Price)
+		err := rows.Scan(&part.Id, &part.Article, &part.Brand, &part.Price, &part.Supplier)
 		if err != nil {
 			log.Fatal(err)
 			return nil, err
@@ -57,8 +58,4 @@ func (lm *linemediaRepository) GetList(article string, brands []string, supplier
 	}
 
 	return parts, nil
-}
-
-func ToString(sep string, arr ...interface{}) string {
-	return strings.Trim(strings.Join(strings.Fields(fmt.Sprint(arr)), sep), "[]{}")
 }
