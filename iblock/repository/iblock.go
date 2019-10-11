@@ -5,7 +5,6 @@ import (
 	"fmt"
 	"github.com/DostonAkhmedov/lucy/iblock"
 	"github.com/DostonAkhmedov/lucy/models"
-	"log"
 	"strings"
 )
 
@@ -22,23 +21,16 @@ func NewIblockRepository(Conn *sql.DB) iblock.Repository {
 func (ib *iblockRepository) GetList() ([]*models.Iblock, error) {
 	iblockIds, err := ib.GetIblockIds()
 	if err != nil {
-		log.Fatal(err)
 		return nil, err
 	}
 	querty := fmt.Sprintf("SELECT ID, CODE, NAME FROM %s WHERE ACTIVE='Y' AND ID IN (%s)", tableName, ToString(iblockIds))
 	rows, err := ib.Conn.Query(querty)
 
 	if err != nil {
-		log.Fatal(err)
 		return nil, err
 	}
 
-	defer func() {
-		err := rows.Close()
-		if err != nil {
-			log.Fatal(err)
-		}
-	}()
+	defer rows.Close()
 
 	iblocks := make([]*models.Iblock, 0)
 
@@ -46,7 +38,6 @@ func (ib *iblockRepository) GetList() ([]*models.Iblock, error) {
 		ib := new(models.Iblock)
 		err = rows.Scan(&ib.Id, &ib.Code, &ib.Name)
 		if err != nil {
-			log.Fatal(err)
 			return nil, err
 		}
 		iblocks = append(iblocks, ib)
@@ -66,16 +57,10 @@ func (ib *iblockRepository) GetIblockIds(codes ...int) ([]int64, error) {
 	rows, err := ib.Conn.Query(querty)
 
 	if err != nil {
-		log.Fatal(err)
 		return nil, err
 	}
 
-	defer func() {
-		err := rows.Close()
-		if err != nil {
-			log.Fatal(err)
-		}
-	}()
+	defer rows.Close()
 
 	var (
 		id     int64
@@ -84,7 +69,6 @@ func (ib *iblockRepository) GetIblockIds(codes ...int) ([]int64, error) {
 	for rows.Next() {
 		err := rows.Scan(&id)
 		if err != nil {
-			log.Fatal(err)
 			return nil, err
 		}
 		result = append(result, id)

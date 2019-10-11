@@ -4,7 +4,6 @@ import (
 	"database/sql"
 	"fmt"
 	"github.com/DostonAkhmedov/lucy/brand/wordforms"
-	"log"
 	"strings"
 )
 
@@ -23,7 +22,6 @@ func (wf *wordFormsRepository) GetWordForms(brand string) ([]string, error) {
 	brands, err := wf.GetByGroup(brand)
 
 	if err != nil {
-		log.Fatal(err)
 		return nil, err
 	}
 
@@ -34,7 +32,6 @@ func (wf *wordFormsRepository) GetWordForms(brand string) ([]string, error) {
 
 	group, err := wf.GetGroup(brand)
 	if err != nil {
-		log.Fatal(err)
 		return nil, err
 	}
 
@@ -58,16 +55,10 @@ func (wf *wordFormsRepository) GetByGroup(brand string) ([]string, error) {
 		brand)
 	rows, err := wf.Conn.Query(query)
 	if err != nil {
-		log.Fatal(err)
 		return nil, err
 	}
 
-	defer func() {
-		err := rows.Close()
-		if err != nil {
-			log.Fatal(err)
-		}
-	}()
+	defer rows.Close()
 
 	var (
 		brandsForms = make([]string, 0)
@@ -76,7 +67,6 @@ func (wf *wordFormsRepository) GetByGroup(brand string) ([]string, error) {
 	for rows.Next() {
 		err := rows.Scan(&word, &group)
 		if err != nil {
-			log.Fatal(err)
 			return nil, err
 		}
 

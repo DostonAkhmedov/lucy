@@ -5,7 +5,6 @@ import (
 	"fmt"
 	"github.com/DostonAkhmedov/lucy/linemedia/discount"
 	"github.com/DostonAkhmedov/lucy/models/linemedia"
-	"log"
 	"strings"
 )
 
@@ -49,16 +48,10 @@ func (d *discountRepository) GetList(suppliers []string) (map[string][]*linemedi
 
 	rows, err := d.Conn.Query(query)
 	if err != nil {
-		log.Fatal(err)
 		return nil, err
 	}
 
-	defer func() {
-		err := rows.Close()
-		if err != nil {
-			log.Fatal(err)
-		}
-	}()
+	defer rows.Close()
 
 	var discounts = make(map[string][]*linemedia.Discount)
 	for rows.Next() {
@@ -72,7 +65,6 @@ func (d *discountRepository) GetList(suppliers []string) (map[string][]*linemedi
 			&disc.MaxPrice,
 			&disc.Percent)
 		if err != nil {
-			log.Fatal(err)
 			return nil, err
 		}
 

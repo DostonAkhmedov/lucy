@@ -5,7 +5,6 @@ import (
 	"fmt"
 	"github.com/DostonAkhmedov/lucy/iblock/property"
 	"github.com/DostonAkhmedov/lucy/models/iblock"
-	"log"
 )
 
 const tableName string = "b_iblock_property"
@@ -53,12 +52,7 @@ func (p *propertyRepository) Add(prop *iblock.Property) (int64, error) {
 		tableName)
 	st, _ := p.Conn.Prepare(query)
 
-	defer func() {
-		err := st.Close()
-		if err != nil {
-			log.Fatal(err)
-		}
-	}()
+	defer st.Close()
 
 	result, err := st.Exec(
 		prop.Active,
@@ -72,7 +66,6 @@ func (p *propertyRepository) Add(prop *iblock.Property) (int64, error) {
 		prop.IsRequired,
 	)
 	if err != nil {
-		log.Fatal(err)
 		return 0, err
 	}
 	id, _ = result.LastInsertId()

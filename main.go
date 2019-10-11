@@ -16,7 +16,6 @@ import (
 	"github.com/DostonAkhmedov/lucy/models/iblock"
 	"github.com/DostonAkhmedov/lucy/models/iblock/element"
 	"github.com/DostonAkhmedov/lucy/models/linemedia"
-	"log"
 	"math"
 	"time"
 )
@@ -25,7 +24,8 @@ func main() {
 
 	start := time.Now()
 
-	logger := logtofile.Create("errors.log", "")
+	logger := logtofile.Create("status.log", "")
+	logger.Println("Start!")
 
 	dbConfig := config.Init()
 	connection, err := mysql.Connection(dbConfig)
@@ -45,6 +45,7 @@ func main() {
 	if err != nil {
 		logger.Fatal(err)
 	}
+	logger.Printf("%d suppliers found.", len(suppliers))
 
 	discountRepo := _discountRepo.NewDiscountRepository(connection)
 	discounts, err := discountRepo.GetList(suppliers)
@@ -63,7 +64,9 @@ func main() {
 	if err != nil {
 		logger.Fatal(err)
 	}
+	logger.Printf("%d iblocks found.", len(iblockIds))
 
+	var cntadded, cntupdated = 0, 0
 	propertyCode := "CML2_BESTPRICE"
 	for _, ibId := range iblockIds {
 		prop, err := propertyRepo.GetByCode(ibId, propertyCode)
@@ -88,6 +91,7 @@ func main() {
 			}
 		}
 		elementList, err := elementRepo.GetList(ibId)
+		logger.Printf("%d products found with iblock=%d.", len(elementList), ibId)
 		if err != nil {
 			logger.Fatal(err)
 		}
@@ -125,17 +129,21 @@ func main() {
 					if err != nil {
 						logger.Fatal(err)
 					}
-				} else {
+					cntadded++
+				} else if elementProperty.Value != minPrice {
 					_, err := elementPropertyRepo.Update(elementProperty.Id, minPrice)
 					if err != nil {
 						logger.Fatal(err)
 					}
+					cntupdated++
 				}
 			}
 		}
 	}
+	logger.Printf("Added new rows: %d", cntadded)
+	logger.Printf("Updated rows: %d", cntupdated)
 	elapsed := time.Since(start)
-	log.Printf("Finished! runned: %s", elapsed)
+	logger.Printf("Finished! runned: %s", elapsed)
 }
 
 func recalc(part *models.LMProduct, discounts []*linemedia.Discount) float64 {

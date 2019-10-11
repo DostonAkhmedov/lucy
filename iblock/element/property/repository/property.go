@@ -5,7 +5,6 @@ import (
 	"fmt"
 	"github.com/DostonAkhmedov/lucy/iblock/element/property"
 	"github.com/DostonAkhmedov/lucy/models/iblock/element"
-	"log"
 )
 
 const tableName string = "b_iblock_element_property"
@@ -50,12 +49,7 @@ func (p *propertyRepository) Add(prop *element.Property) (int64, error) {
 		tableName)
 	st, _ := p.Conn.Prepare(query)
 
-	defer func() {
-		err := st.Close()
-		if err != nil {
-			log.Fatal(err)
-		}
-	}()
+	defer st.Close()
 
 	result, err := st.Exec(
 		prop.IblockPropertyId,
@@ -64,7 +58,6 @@ func (p *propertyRepository) Add(prop *element.Property) (int64, error) {
 	)
 
 	if err != nil {
-		log.Fatal(err)
 		return 0, err
 	}
 
@@ -72,10 +65,9 @@ func (p *propertyRepository) Add(prop *element.Property) (int64, error) {
 }
 
 func (p *propertyRepository) Update(id int64, value float64) (int64, error) {
-	query := fmt.Sprintf("UPDATE %s SET VALUE=? WHERE ID=?;", tableName)
-	result, err := p.Conn.Exec(query, value, id)
+	query := fmt.Sprintf("UPDATE %s SET VALUE=?, VALUE_NUM=? WHERE ID=?;", tableName)
+	result, err := p.Conn.Exec(query, value, value, id)
 	if err != nil {
-		log.Fatal(err)
 		return 0, err
 	}
 

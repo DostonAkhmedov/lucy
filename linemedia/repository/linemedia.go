@@ -5,7 +5,6 @@ import (
 	"fmt"
 	"github.com/DostonAkhmedov/lucy/linemedia"
 	"github.com/DostonAkhmedov/lucy/models"
-	"log"
 	"strings"
 )
 
@@ -33,24 +32,16 @@ func (lm *linemediaRepository) GetList(article string, brands []string, supplier
 	)
 	rows, err := lm.Conn.Query(query)
 	if err != nil {
-		log.Println(query)
-		log.Fatal(err)
 		return nil, err
 	}
 
-	defer func() {
-		err := rows.Close()
-		if err != nil {
-			log.Fatal(err)
-		}
-	}()
+	defer rows.Close()
 
 	parts := make([]*models.LMProduct, 0)
 	for rows.Next() {
 		part := new(models.LMProduct)
 		err := rows.Scan(&part.Id, &part.Article, &part.Brand, &part.Price, &part.Supplier)
 		if err != nil {
-			log.Fatal(err)
 			return nil, err
 		}
 

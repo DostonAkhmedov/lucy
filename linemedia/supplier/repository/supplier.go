@@ -4,7 +4,6 @@ import (
 	"database/sql"
 	"fmt"
 	"github.com/DostonAkhmedov/lucy/linemedia/supplier"
-	"log"
 )
 
 const tableName string = "b_lm_sphinx_active_suppliers"
@@ -21,16 +20,10 @@ func (s *supplierRepository) GetList() ([]string, error) {
 	query := fmt.Sprintf("SELECT id FROM %s", tableName)
 	rows, err := s.Conn.Query(query)
 	if err != nil {
-		log.Fatal(err)
 		return nil, err
 	}
 
-	defer func() {
-		err := rows.Close()
-		if err != nil {
-			log.Fatal(err)
-		}
-	}()
+	defer rows.Close()
 
 	var (
 		suppliers = make([]string, 0)
@@ -39,7 +32,6 @@ func (s *supplierRepository) GetList() ([]string, error) {
 	for rows.Next() {
 		err := rows.Scan(&sp)
 		if err != nil {
-			log.Fatal(err)
 			return nil, err
 		}
 

@@ -5,7 +5,6 @@ import (
 	"fmt"
 	"github.com/DostonAkhmedov/lucy/iblock/element"
 	"github.com/DostonAkhmedov/lucy/models/iblock"
-	"log"
 	"regexp"
 	"strings"
 )
@@ -37,23 +36,16 @@ func (el *elementRepository) GetList(iblockId int64) ([]*iblock.Element, error) 
 	)
 	rows, err := el.Conn.Query(query)
 	if err != nil {
-		log.Fatal(err)
 		return nil, err
 	}
 
-	defer func() {
-		err := rows.Close()
-		if err != nil {
-			log.Fatal(err)
-		}
-	}()
+	defer rows.Close()
 
 	var elements = make([]*iblock.Element, 0)
 	for rows.Next() {
 		el := new(iblock.Element)
 		err = rows.Scan(&el.Id, &el.Brand, &el.Article, &el.Quantity, &el.MinPrice)
 		if err != nil {
-			log.Fatal(err)
 			return nil, err
 		}
 
