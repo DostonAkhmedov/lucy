@@ -1,6 +1,7 @@
 package main
 
 import (
+	"fmt"
 	_wordFormRepo "github.com/DostonAkhmedov/lucy/brand/wordforms/repository"
 	"github.com/DostonAkhmedov/lucy/config"
 	"github.com/DostonAkhmedov/lucy/driver/mysql"
@@ -11,7 +12,7 @@ import (
 	_discountRepo "github.com/DostonAkhmedov/lucy/linemedia/discount/repository"
 	_linemediaRepo "github.com/DostonAkhmedov/lucy/linemedia/repository"
 	_supplierRepo "github.com/DostonAkhmedov/lucy/linemedia/supplier/repository"
-	"github.com/DostonAkhmedov/lucy/logtofile"
+	"github.com/DostonAkhmedov/lucy/logger"
 	"github.com/DostonAkhmedov/lucy/models"
 	"github.com/DostonAkhmedov/lucy/models/iblock"
 	"github.com/DostonAkhmedov/lucy/models/iblock/element"
@@ -24,33 +25,41 @@ func main() {
 
 	start := time.Now()
 
-	logger := logtofile.Create("status.log", "")
-	logger.Println("Start!")
+	conf := config.Init()
 
-	dbConfig := config.Init()
-	connection, err := mysql.Connection(dbConfig)
+	logtofile := logger.Create("status.log", "")
+	slacklogger := logger.SlcLogger(conf)
+
+	logtofile.Println("Start!")
+	slacklogger.Info("Start!")
+
+	connection, err := mysql.Connection(conf)
 	if err != nil {
-		logger.Fatal(err)
+		logtofile.Fatal(err)
+		slacklogger.Error(err)
 	}
 
 	defer func() {
 		err := connection.Close()
 		if err != nil {
-			logger.Fatal(err)
+			logtofile.Fatal(err)
+			slacklogger.Error(err)
 		}
 	}()
 
 	supplierRepo := _supplierRepo.NewSupplierRepository(connection)
 	suppliers, err := supplierRepo.GetList()
 	if err != nil {
-		logger.Fatal(err)
+		logtofile.Fatal(err)
+		slacklogger.Error(err)
 	}
-	logger.Printf("%d suppliers found.", len(suppliers))
+	logtofile.Printf("%d suppliers found.", len(suppliers))
 
 	discountRepo := _discountRepo.NewDiscountRepository(connection)
 	discounts, err := discountRepo.GetList(suppliers)
 	if err != nil {
-		logger.Fatal(err)
+		logtofile.Fatal(err)
+		slacklogger.Error(err)
 	}
 
 	propertyRepo := _propertyRepo.NewPropertyRepository(connection)
@@ -62,16 +71,18 @@ func main() {
 	iblockRepo := _iblockRepo.NewIblockRepository(connection)
 	iblockIds, err := iblockRepo.GetIblockIds()
 	if err != nil {
-		logger.Fatal(err)
+		logtofile.Fatal(err)
+		slacklogger.Error(err)
 	}
-	logger.Printf("%d iblocks found.", len(iblockIds))
+	logtofile.Printf("%d iblocks found.", len(iblockIds))
 
 	var cntadded, cntupdated = 0, 0
 	propertyCode := "CML2_BESTPRICE"
 	for _, ibId := range iblockIds {
 		prop, err := propertyRepo.GetByCode(ibId, propertyCode)
 		if err != nil {
-			logger.Fatal(err)
+			logtofile.Fatal(err)
+			slacklogger.Error(err)
 		}
 		if prop == nil {
 			prop = &iblock.Property{
@@ -87,26 +98,31 @@ func main() {
 			}
 			prop.Id, err = propertyRepo.Add(prop)
 			if err != nil {
-				logger.Fatal(err)
+				logtofile.Fatal(err)
+				slacklogger.Error(err)
 			}
 		}
 		elementList, err := elementRepo.GetList(ibId)
-		logger.Printf("%d products found with iblock=%d.", len(elementList), ibId)
 		if err != nil {
-			logger.Fatal(err)
+			logtofile.Fatal(err)
+			slacklogger.Error(err)
 		}
+		logtofile.Printf("%d products found with iblock=%d.", len(elementList), ibId)
+		slacklogger.Info(fmt.Sprintf("%d products found with iblock=%d.", len(elementList), ibId))
 		for _, el := range elementList {
 			el.Article = elementRepo.FormatArticle(el.Article)
 			var minPrice = el.MinPrice
 			if len(el.Article) > 0 && len(el.Brand) > 0 {
 				brands, err := brandsRepo.GetWordForms(el.Brand)
 				if err != nil {
-					logger.Fatal(err)
+					logtofile.Fatal(err)
+					slacklogger.Error(err)
 				}
 
 				lmProducts, err := linemediaRepo.GetList(el.Article, brands, suppliers)
 				if err != nil {
-					logger.Fatal(err)
+					logtofile.Fatal(err)
+					slacklogger.Error(err)
 				}
 				for _, part := range lmProducts {
 					if _, prs := discounts[part.Supplier]; prs {
@@ -118,7 +134,8 @@ func main() {
 
 				elementProperty, err := elementPropertyRepo.GetById(prop.Id, el.Id)
 				if err != nil {
-					logger.Fatal(err)
+					logtofile.Fatal(err)
+					slacklogger.Error(err)
 				}
 				if elementProperty == nil {
 					elementProperty.Id, err = elementPropertyRepo.Add(&element.Property{
@@ -127,23 +144,30 @@ func main() {
 						Value:            minPrice,
 					})
 					if err != nil {
-						logger.Fatal(err)
+						logtofile.Fatal(err)
+						slacklogger.Error(err)
 					}
 					cntadded++
 				} else if elementProperty.Value != minPrice {
 					_, err := elementPropertyRepo.Update(elementProperty.Id, minPrice)
 					if err != nil {
-						logger.Fatal(err)
+						logtofile.Fatal(err)
+						slacklogger.Error(err)
 					}
 					cntupdated++
 				}
 			}
 		}
 	}
-	logger.Printf("Added new rows: %d", cntadded)
-	logger.Printf("Updated rows: %d", cntupdated)
+	logtofile.Printf("Added new rows: %d", cntadded)
+	logtofile.Printf("Updated rows: %d", cntupdated)
+
+	slacklogger.Info(fmt.Sprintf("Added new rows: %d", cntadded))
+	slacklogger.Info(fmt.Sprintf("Updated rows: %d", cntupdated))
+
 	elapsed := time.Since(start)
-	logger.Printf("Finished! runned: %s", elapsed)
+	logtofile.Printf("Finished! runned: %s", elapsed)
+	slacklogger.Info(fmt.Sprintf("Finished! runned: %s", elapsed))
 }
 
 func recalc(part *models.LMProduct, discounts []*linemedia.Discount) float64 {

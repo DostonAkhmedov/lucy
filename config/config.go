@@ -6,6 +6,8 @@ type Config struct {
 	dbUser     string
 	dbPassword string
 	dbName     string
+
+	slcWebhook string
 }
 
 func (c Config) GetDBHost() string {
@@ -26,4 +28,8 @@ func (c Config) GetDBPassword() string {
 
 func (c Config) GetDBName() string {
 	return c.dbName
+}
+
+func (c Config) GetSlcWebHook() string {
+	return c.slcWebhook
 }

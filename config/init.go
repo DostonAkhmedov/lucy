@@ -18,6 +18,8 @@ func Init() *Config {
 	flag.StringVar(&defaultConfig.dbPassword, "db-password", "", "Database password")
 	flag.StringVar(&defaultConfig.dbName, "db-name", "lucy", "Database name")
 
+	flag.StringVar(&defaultConfig.slcWebhook, "slc-webhook", "https://hooks.slack.com/services/YOUR_WEBHOOK_URL", "Slack Logger")
+
 	flag.Parse()
 
 	return defaultConfig

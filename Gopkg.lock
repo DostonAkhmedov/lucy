@@ -2,10 +2,22 @@
 
 
 [[projects]]
+  name = "github.com/asaskevich/govalidator"
+  packages = ["."]
+  revision = "ccb8e960c48f04d6935e72476ae4a51028f9e22f"
+  version = "v9"
+
+[[projects]]
   name = "github.com/go-sql-driver/mysql"
   packages = ["."]
   revision = "72cd26f257d44c1114970e19afddcd812016007e"
   version = "v1.4.1"
+
+[[projects]]
+  name = "github.com/iktakahiro/slclogger"
+  packages = ["."]
+  revision = "45f43cb34cc0e9edf4cdc2ae75859686c12dad47"
+  version = "v2.0.4"
 
 [[projects]]
   name = "github.com/namsral/flag"
@@ -22,6 +34,6 @@
 [solve-meta]
   analyzer-name = "dep"
   analyzer-version = 1
-  inputs-digest = "ab86bdccdabb714fdd91aab7a5ac1e3db8767130fe367a6d9f1368d205cf06ad"
+  inputs-digest = "f9b879c115f2d7040e171ed5631a31807105926863467cf7667034bd2186a1da"
   solver-name = "gps-cdcl"
   solver-version = 1
