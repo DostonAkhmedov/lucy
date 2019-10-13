@@ -27,7 +27,7 @@ func main() {
 
 	conf := config.Init()
 
-	logtofile := logger.Create("status.log", "")
+	logtofile := logger.ToFile("status.log", "")
 	slacklogger := logger.SlcLogger(conf)
 
 	logtofile.Println("Start!")

@@ -10,7 +10,7 @@ import (
 
 var defaultLogger *log.Logger
 
-func Create(file string, prefix string) *log.Logger {
+func ToFile(file string, prefix string) *log.Logger {
 
 	if defaultLogger != nil {
 		return defaultLogger
