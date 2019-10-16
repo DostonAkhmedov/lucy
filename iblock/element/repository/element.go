@@ -42,12 +42,16 @@ func (el *elementRepository) GetList(iblockId int64) ([]*iblock.Element, error) 
 	defer rows.Close()
 
 	var elements = make([]*iblock.Element, 0)
+	var brand, article sql.NullString
 	for rows.Next() {
 		el := new(iblock.Element)
-		err = rows.Scan(&el.Id, &el.Brand, &el.Article, &el.Quantity, &el.MinPrice)
+		err = rows.Scan(&el.Id, &brand, &article, &el.Quantity, &el.MinPrice)
 		if err != nil {
 			return nil, err
 		}
+
+		el.Brand = brand.String
+		el.Article = article.String
 
 		elements = append(elements, el)
 	}

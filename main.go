@@ -78,6 +78,8 @@ func main() {
 	}
 	logtofile.Printf("%d iblocks found.", len(iblockIds))
 
+	var brandsWordForms = make(map[string][]string)
+
 	var cntadded, cntupdated = 0, 0
 	propertyCode := "CML2_BESTPRICE"
 	for _, ibId := range iblockIds {
@@ -112,25 +114,20 @@ func main() {
 		logtofile.Printf("%d products found with iblock=%d.", len(elementList), ibId)
 		slacklogger.Info(fmt.Sprintf("%d products found with iblock=%d.", len(elementList), ibId))
 		for _, el := range elementList {
-			var article, brand = "", ""
-			if el.Article.Valid {
-				article = elementRepo.FormatArticle(el.Article.String)
-			}
-			if el.Brand.Valid {
-				brand = el.Brand.String
-			}
+			el.Article = elementRepo.FormatArticle(el.Article)
 			var minPrice = math.MaxFloat64
 			if el.Quantity > 0 {
 				minPrice = el.MinPrice
 			}
-			if len(article) > 0 && len(brand) > 0 {
-				brands, err := brandsRepo.GetWordForms(brand)
-				if err != nil {
-					logtofile.Println(err)
-					slacklogger.Error(err, "Get brand forms error!")
+			if len(el.Article) > 0 && len(el.Brand) > 0 {
+				if _, prs := brandsWordForms[el.Brand]; !prs {
+					brandsWordForms[el.Brand], err = brandsRepo.GetWordForms(el.Brand)
+					if err != nil {
+						logtofile.Println(err)
+						slacklogger.Error(err, "Get brand forms error!")
+					}
 				}
-
-				lmProducts, err := linemediaRepo.GetList(article, brands, suppliers)
+				lmProducts, err := linemediaRepo.GetList(el.Article, brandsWordForms[el.Brand], suppliers)
 				if err != nil {
 					logtofile.Println(err)
 					slacklogger.Error(err, "Get linemedia part error!")
@@ -165,6 +162,9 @@ func main() {
 					}
 					cntadded++
 				} else if elementProperty.Value != minPrice {
+					logtofile.Println(el)
+					logtofile.Println(minPrice)
+					logtofile.Println(elementProperty.Value)
 					_, err := elementPropertyRepo.Update(elementProperty.Id, minPrice)
 					if err != nil {
 						logtofile.Println(err)
