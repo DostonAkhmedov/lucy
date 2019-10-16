@@ -1,8 +1,6 @@
 package logger
 
 import (
-	"fmt"
-	"github.com/DostonAkhmedov/lucy/config"
 	"github.com/iktakahiro/slclogger"
 	"log"
 	"os"
@@ -16,7 +14,13 @@ func ToFile(file string, prefix string) *log.Logger {
 		return defaultLogger
 	}
 
-	filepath := fmt.Sprintf("lucy/logs/%s", file)
+	folderPath := "logs/"
+	if err := os.MkdirAll(folderPath, os.ModePerm); err != nil {
+		log.Fatal(err)
+	}
+
+	filepath := folderPath + file
+	log.Println(filepath)
 	f, err := os.OpenFile(filepath,
 		os.O_APPEND|os.O_CREATE|os.O_WRONLY, 0644)
 	if err != nil {
@@ -28,12 +32,9 @@ func ToFile(file string, prefix string) *log.Logger {
 	return defaultLogger
 }
 
-func SlcLogger(conf *config.Config) *slclogger.SlcLogger {
-	if conf == nil {
-		conf = config.Init()
-	}
+func SlcLogger(webHookUrl string) *slclogger.SlcLogger {
 	slacklogger, _ := slclogger.NewSlcLogger(&slclogger.LoggerParams{
-		WebHookURL:     conf.GetSlcWebHook(),
+		WebHookURL:     webHookUrl,
 		LogLevel:       slclogger.LevelDebug,
 		DefaultChannel: "",
 		DebugChannel:   "",

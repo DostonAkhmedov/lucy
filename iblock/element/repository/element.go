@@ -22,14 +22,14 @@ func NewElementRepository(Conn *sql.DB) element.Repository {
 func (el *elementRepository) GetList(iblockId int64) ([]*iblock.Element, error) {
 	query := fmt.Sprintf("SELECT BE.ID AS ID, PV0.VALUE AS BRAND, PV1.VALUE AS ARTICLE, PR.QUANTITY AS QUANTITY, MIN(CEIL(P.PRICE)) AS PRICE "+
 		"FROM %s BE "+
-		"LEFT JOIN b_iblock B ON B.ID = IBLOCK_ID "+
-		"RIGHT JOIN b_catalog_product PR ON PR.ID = BE.ID "+
-		"RIGHT JOIN b_catalog_price P ON P.PRODUCT_ID = BE.ID "+
+		"INNER JOIN b_iblock B ON B.ID = IBLOCK_ID "+
+		"LEFT JOIN b_catalog_product PR ON PR.ID = BE.ID "+
+		"INNER JOIN b_catalog_price P ON P.PRODUCT_ID = BE.ID "+
 		"LEFT JOIN b_iblock_property P0 ON P0.IBLOCK_ID = B.ID AND P0.CODE='BRAND' "+
 		"LEFT JOIN b_iblock_property P1 ON P1.IBLOCK_ID = B.ID AND P1.CODE='CML2_ARTICLE' "+
-		"RIGHT JOIN b_iblock_element_property PV0 ON PV0.IBLOCK_PROPERTY_ID = P0.ID AND PV0.IBLOCK_ELEMENT_ID = BE.ID "+
-		"RIGHT JOIN b_iblock_element_property PV1 ON PV1.IBLOCK_PROPERTY_ID = P1.ID AND PV1.IBLOCK_ELEMENT_ID = BE.ID "+
-		"WHERE BE.ACTIVE='Y' AND BE.IBLOCK_ID=%d AND PR.QUANTITY > 0 AND CEIL(P.PRICE) > 0 "+
+		"LEFT JOIN b_iblock_element_property PV0 ON PV0.IBLOCK_PROPERTY_ID = P0.ID AND PV0.IBLOCK_ELEMENT_ID = BE.ID "+
+		"LEFT JOIN b_iblock_element_property PV1 ON PV1.IBLOCK_PROPERTY_ID = P1.ID AND PV1.IBLOCK_ELEMENT_ID = BE.ID "+
+		"WHERE BE.ACTIVE='Y' AND BE.IBLOCK_ID=%d AND CEIL(P.PRICE) > 0 "+
 		"GROUP BY BE.ID;",
 		tableName,
 		iblockId,

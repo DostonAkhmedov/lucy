@@ -22,3 +22,6 @@ vendor/
 
 # Log files
 *.log
+
+# Programm
+lucy

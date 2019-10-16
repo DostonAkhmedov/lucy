@@ -5,7 +5,6 @@ import (
 	"fmt"
 	"github.com/DostonAkhmedov/lucy/config"
 	_ "github.com/go-sql-driver/mysql"
-	"log"
 )
 
 type DB struct {
@@ -29,12 +28,12 @@ func Connection(conf *config.Config) (*sql.DB, error) {
 	)
 	db, err := sql.Open("mysql", dbSource)
 	if err != nil {
-		panic(err)
+		return nil, err
 	}
 
 	err = db.Ping()
 	if err != nil {
-		log.Fatal(err)
+		return nil, err
 	}
 
 	dbConn.SQL = db

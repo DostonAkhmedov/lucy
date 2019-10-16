@@ -19,6 +19,8 @@ func NewWordFormsRepository(Conn *sql.DB) wordforms.Repository {
 
 func (wf *wordFormsRepository) GetWordForms(brand string) ([]string, error) {
 
+	brand = wf.ClearBrand(brand)
+
 	brands, err := wf.GetByGroup(brand)
 
 	if err != nil {
@@ -26,7 +28,7 @@ func (wf *wordFormsRepository) GetWordForms(brand string) ([]string, error) {
 	}
 
 	if len(brands) > 0 {
-		brands = append(brands, wf.ClearBrand(brand))
+		brands = append(brands, brand)
 		return brands, nil
 	}
 
@@ -38,12 +40,12 @@ func (wf *wordFormsRepository) GetWordForms(brand string) ([]string, error) {
 	if len(group) > 0 {
 		brands, err = wf.GetByGroup(group)
 		if err == nil {
-			brands = append(brands, wf.ClearBrand(group))
+			brands = append(brands, group)
 		}
 		return brands, err
 	}
 
-	return []string{wf.ClearBrand(brand)}, nil
+	return []string{brand}, nil
 }
 
 func (wf *wordFormsRepository) GetByGroup(brand string) ([]string, error) {
@@ -90,7 +92,7 @@ func (wf *wordFormsRepository) GetGroup(brand string) (string, error) {
 	case sql.ErrNoRows:
 		return "", nil
 	case nil:
-		return group, nil
+		return wf.ClearBrand(group), nil
 	default:
 		return "", err
 	}
