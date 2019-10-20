@@ -21,6 +21,8 @@ import (
 	"time"
 )
 
+const packLimit int = 1000
+
 func main() {
 
 	start := time.Now()
@@ -79,6 +81,7 @@ func main() {
 	logtofile.Printf("%d iblocks found.", len(iblockIds))
 
 	var brandsWordForms = make(map[string][]string)
+	var elPropsToUpdate = make([]*element.Property, 0)
 
 	var cntadded, cntupdated = 0, 0
 	propertyCode := "CML2_BESTPRICE"
@@ -162,19 +165,32 @@ func main() {
 					}
 					cntadded++
 				} else if elementProperty.Value != minPrice {
-					logtofile.Println(el)
-					logtofile.Println(minPrice)
-					logtofile.Println(elementProperty.Value)
-					_, err := elementPropertyRepo.Update(elementProperty.Id, minPrice)
-					if err != nil {
-						logtofile.Println(err)
-						slacklogger.Error(err, "Update min price error!")
+					if len(elPropsToUpdate) < packLimit {
+						elPropsToUpdate = append(elPropsToUpdate, &element.Property{elementProperty.Id, prop.Id, el.Id, minPrice})
+					} else {
+						err := elementPropertyRepo.UpdateMultiple(elPropsToUpdate)
+						if err != nil {
+							logtofile.Println(err)
+							slacklogger.Error(err, "Update min price error!")
+						}
+						cntupdated += packLimit
+						elPropsToUpdate = make([]*element.Property, 0)
 					}
-					cntupdated++
 				}
 			}
 		}
 	}
+
+	if len(elPropsToUpdate) > 0 {
+		err := elementPropertyRepo.UpdateMultiple(elPropsToUpdate)
+		if err != nil {
+			logtofile.Println(err)
+			slacklogger.Error(err, "Update min price error!")
+		}
+		cntupdated += len(elPropsToUpdate)
+		elPropsToUpdate = make([]*element.Property, 0)
+	}
+
 	logtofile.Printf("Added new rows: %d", cntadded)
 	logtofile.Printf("Updated rows: %d", cntupdated)
 

@@ -73,3 +73,30 @@ func (p *propertyRepository) Update(id int64, value float64) (int64, error) {
 
 	return result.RowsAffected()
 }
+
+func (p *propertyRepository) UpdateMultiple(props []*element.Property) error {
+
+	// Get new Transaction.
+	txn, err := p.Conn.Begin()
+	if err != nil {
+		return err
+	}
+
+	defer func() {
+		// Rollback the transaction after the function returns.
+		// If the transaction was already commited, this will do nothing.
+		_ = txn.Rollback()
+	}()
+	for _, prop := range props {
+		query := fmt.Sprintf("UPDATE %s SET VALUE=?, VALUE_NUM=? WHERE ID=?;", tableName)
+
+		// Execute the query in the transaction.
+		_, err := txn.Exec(query, prop.Value, prop.Value, prop.Id)
+		if err != nil {
+			return err
+		}
+	}
+
+	// Commit the transaction.
+	return txn.Commit()
+}
